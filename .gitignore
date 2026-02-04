@@ -1,0 +1,38 @@
+# --- Build Directories ---
+/build/
+/bin/
+/obj/
+Debug/
+Release/
+
+# --- Compiled Object Files ---
+*.o
+*.obj
+*.o.d
+
+# --- Executables and Libraries ---
+*.exe
+*.out
+*.app
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+
+# --- IDE/Editor Configurations ---
+.vscode/
+.idea/
+*.user
+*.suo
+*.workspace
+*.depend
+*.layout
+
+# --- Operating System Files ---
+.DS_Store
+Thumbs.db
+
+# --- Miscellaneous ---
+*.log
+compile_commands.json
