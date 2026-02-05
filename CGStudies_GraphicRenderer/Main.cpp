@@ -1,9 +1,17 @@
 #include <iostream>
 #include <SDL.h>
+#include <vector>
 
 bool is_running = false;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
+SDL_Texture* color_buffer_texture = NULL;
+
+int window_width = 256;
+int window_height = 256;
+
+// uint32_t is a FIXED SIZE type. This is to guarantee that every color will have 32 bits (8 per channel, RGBA)
+std::vector<uint32_t>color_buffer(sizeof(uint32_t) * window_width * window_height);
 
 bool initialize_window(void) 
 {
@@ -19,11 +27,10 @@ bool initialize_window(void)
         NULL, // a title
         SDL_WINDOWPOS_CENTERED, 
         SDL_WINDOWPOS_CENTERED, // position X and position Y (origin of the window at top-left), 
-        800, // width
-        600, // height
+        window_width, // width
+        window_height, // height
         SDL_WINDOW_BORDERLESS //flags
     );
-    // checks if pointer is null
     if (!window) 
     {
         fprintf(stderr, "Error creating SDL window.\n");
@@ -57,10 +64,14 @@ void process_input()
         // this is triggered when we click the X button of the window
         case SDL_QUIT:
             is_running = false;
+            //clean_up();
             break;
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE) 
+            {
                 is_running = false;
+                //clean_up();
+            }
             break;
     }
 }
@@ -70,11 +81,35 @@ void update()
 
 }
 
+void clear_color_buffer(uint32_t color) 
+{
+    // this loops the ROWS (y is the rows index, because they're defined from top to bottom)
+    for (int y = 0; y < window_height; y++)
+    {
+        for (int x = 0; x < window_width; x++) 
+        {
+            // window_width * y means we are selecting our row index
+            // + x means that, once we're in the right row, we offset (1 unit at a time) to find the right column.
+            color_buffer[(window_width * y) + x] = color;
+        }
+    }
+}
+
 void render() 
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    clear_color_buffer(0XFFFFFF00);
+
     SDL_RenderPresent(renderer);
+}
+
+void clean_up() 
+{
+    if (renderer) SDL_DestroyRenderer(renderer);
+    if (window) SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 // these parameters are needed in order for SDL to run, otherwise I get the LNK2019 error
