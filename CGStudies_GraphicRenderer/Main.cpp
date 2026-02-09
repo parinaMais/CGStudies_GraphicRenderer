@@ -106,18 +106,32 @@ void clear_color_buffer(uint32_t color)
     {
         for (int x = 0; x < window_width; x++) 
         {
-            uint8_t r = 0 + x;
-            uint8_t g = 0 + y;
-            uint8_t b = 0;
-            uint8_t a = 1.0;
-
-            // bitshifting to combine the colors back
-            // remember: every section is 8bits, so shifting in multiples of 8
-            color = (a << 24) | (r << 16) | (g << 8) | b;
-
             // window_width * y means we are selecting our row index
             // + x means that, once we're in the right row, we offset (1 unit at a time) to find the right column).
             color_buffer[(window_width * y) + x] = color;
+        }
+    }
+}
+
+void draw_rect(int x, int y, int width, int height, uint32_t color) 
+{
+    for (int i = y; i < height; i++)
+    {
+        for (int j = x; j < width; j++)
+        {
+            color_buffer[(window_width * i) + j] = color;
+        }
+    }
+}
+
+void draw_grid(int grid_size, uint32_t color)
+{
+    for (int y = 0; y < window_height; y++)
+    {
+        for (int x = 0; x < window_width; x++)
+        {
+            if (x % grid_size == 0 || y % grid_size == 0)
+                color_buffer[(window_width * y) + x] = color;
         }
     }
 }
@@ -127,8 +141,11 @@ void render()
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    draw_grid(10, 0xFFFFFF00);
+    draw_rect(20, 35, 120, 200, 0xFFFFFFFF);
+
     render_color_buffer();
-    clear_color_buffer(0XFFFFFF00);
+    clear_color_buffer(0XFF000000);
 
     SDL_RenderPresent(renderer);
 }
