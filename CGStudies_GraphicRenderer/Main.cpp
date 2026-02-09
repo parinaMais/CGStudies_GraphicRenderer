@@ -3,6 +3,7 @@
 #include <vector>
 
 bool is_running = false;
+
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
@@ -51,7 +52,13 @@ bool initialize_window(void)
 
 void setup() 
 {
-
+    color_buffer_texture = SDL_CreateTexture(
+        renderer, // the assigned SDL renderer
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING, // this is so we can update it several times per frame
+        window_width,
+        window_height
+    );
 }
 
 void process_input() 
@@ -81,15 +88,35 @@ void update()
 
 }
 
+void render_color_buffer() 
+{
+    SDL_UpdateTexture(
+        color_buffer_texture,
+        NULL,
+        color_buffer.data(),
+        (int)(window_width * sizeof(uint32_t)) // size of pixels in a single row
+    );
+
+    SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
+}
+
 void clear_color_buffer(uint32_t color) 
 {
-    // this loops the ROWS (y is the rows index, because they're defined from top to bottom)
     for (int y = 0; y < window_height; y++)
     {
         for (int x = 0; x < window_width; x++) 
         {
+            uint8_t r = 0 + x;
+            uint8_t g = 0 + y;
+            uint8_t b = 0;
+            uint8_t a = 1.0;
+
+            // bitshifting to combine the colors back
+            // remember: every section is 8bits, so shifting in multiples of 8
+            color = (a << 24) | (r << 16) | (g << 8) | b;
+
             // window_width * y means we are selecting our row index
-            // + x means that, once we're in the right row, we offset (1 unit at a time) to find the right column.
+            // + x means that, once we're in the right row, we offset (1 unit at a time) to find the right column).
             color_buffer[(window_width * y) + x] = color;
         }
     }
@@ -100,6 +127,7 @@ void render()
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    render_color_buffer();
     clear_color_buffer(0XFFFFFF00);
 
     SDL_RenderPresent(renderer);
@@ -124,6 +152,8 @@ int main(int argc, char*args[]) {
         update();
         render();
     }
+
+    clean_up();
 
     std::cout << "this is for me to remember how to std::cout" << std::endl;
     return 0;
